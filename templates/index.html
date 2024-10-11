@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnnData.AI - Crop Market Insights</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #1a237e;
+      --secondary-color: #00c853;
+      --background-color: #f5f7fa;
+      --text-color: #37474f;
+      --card-hover: #eef2f7;
+    }
+
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      font-family: 'Roboto', sans-serif;
+    }
+
+    nav {
+      height: 150px;
+      line-height: 150px;
+      background: linear-gradient(135deg, var(--primary-color), #303f9f);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .nav-wrapper {
+      background: transparent;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      height: 150px;
+      transition: transform 0.3s ease;
+    }
+
+    .brand-logo:hover {
+      transform: scale(1.02);
+    }
+
+    .brand-logo img {
+      height: 100px;
+      width: auto;
+      margin-left: 20px;
+      margin-top: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .brand-logo span {
+      font-size: 2rem;
+      margin-left: 20px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .card {
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      background: white;
+      margin: 15px 0;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      color: var(--primary-color);
+      font-weight: 600;
+      padding: 15px 0;
+    }
+
+    .table-card {
+      overflow-x: auto;
+    }
+
+    .striped tbody tr:nth-child(odd) {
+      background-color: var(--background-color);
+    }
+
+    .commodity-card {
+      cursor: pointer;
+      height: 160px;
+    }
+
+    .commodity-card .card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 15px;
+    }
+
+    .commodity-icon {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      margin-top: 10px;
+      transition: transform 0.3s ease;
+    }
+
+    .commodity-card:hover .commodity-icon {
+      transform: scale(1.2) rotate(5deg);
+    }
+
+    /* Price Changes Styling */
+    .valign-wrapper {
+      color: var(--secondary-color);
+      font-weight: 500;
+    }
+
+    /* Animations */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* Scroll Progress Bar */
+    .progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      z-index: 1000;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary-color), #69f0ae);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--background-color);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 5px;
+    }
+
+    /* Responsive Design */
+    @media only screen and (max-width: 600px) {
+      nav {
+        height: 120px;
+        line-height: 120px;
+      }
+      
+      .brand-logo {
+        height: 120px;
+      }
+      
+      .brand-logo img {
+        height: 80px;
+      }
+      
+      .brand-logo span {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo">
+        <img src="/static/images/logo.jpg" alt="AnnDataAIlogo">
+        <span>AnnData.AI - Predicting the Future ✨</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row">
+      <div class="col s12 m8">
+        <div class="card table-card" data-aos="fade-up">
+          <div class="card-content">
+            <span class="card-title">Top Gainers (Current Trends)</span>
+            <table class="striped">
+              <thead>
+                <tr>
+                  <th>Item Name</th>
+                  <th>Price (per Qtl.)</th>
+                  <th>Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in context['top5'] %}
+                <tr data-aos="fade-right" data-aos-delay="{{loop.index * 100}}">
+                  <td>{{item[0]}}</td>
+                  <td>₹{{item[1]}}</td>
+                  <td class="valign-wrapper">{{item[2]}}% <img src="../static/gain-icon.png" height="25" width="25"></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="card table-card" data-aos="fade-up">
+          <div class="card-content">
+            <span class="card-title">Top Losers (Current Trends)</span>
+            <table class="striped">
+              <thead>
+                <tr>
+                  <th>Item Name</th>
+                  <th>Price (per Qtl.)</th>
+                  <th>Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in context['bottom5'] %}
+                <tr data-aos="fade-right" data-aos-delay="{{loop.index * 100}}">
+                  <td>{{item[0]}}</td>
+                  <td>₹{{item[1]}}</td>
+                  <td class="valign-wrapper">{{item[2]}}% <img src="../static/loss-icon.png" height="25" width="25"></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col s12 m4">
+        <div class="card floating" data-aos="fade-left">
+          <div class="card-content">
+            <span class="card-title">Star Commodity Prediction</span>
+            <h6 id="time">{{context.sixmonths[0][0]}}</h6>
+            <div class="divider"></div>
+            <div class="section">
+              <h5 id="crop1">{{context.sixmonths[0][1]}}</h5>
+              <h4 id="price1">₹{{context.sixmonths[0][2]}}</h4>
+              <p id="pos-change" class="valign-wrapper">{{context.sixmonths[0][3]}}% <img id="change1" src="../static/gain-icon.png" height="20" width="20" style="margin-left: 5px;"></p>
+            </div>
+            <div class="divider"></div>
+            <div class="section">
+              <h5 id="crop2">{{context.sixmonths[0][4]}}</h5>
+              <h4 id="price2">₹{{context.sixmonths[0][5]}}</h4>
+              <p id="neg-change" class="valign-wrapper">{{context.sixmonths[0][6]}}% <img id="change2" src="../static/loss-icon.png" height="20" width="20" style="margin-left: 5px;"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h4 data-aos="fade-up">Explore by Commodity</h4>
+    <div class="row">
+      {% for commodity in [
+        ('paddy', 'Paddy', 'https://img.icons8.com/color/48/000000/rice-bowl.png'),
+        ('wheat', 'Wheat', 'https://img.icons8.com/color/48/000000/wheat.png'),
+        ('barley', 'Barley', 'https://img.icons8.com/color/48/000000/barley.png'),
+        ('soyabean', 'Soya Bean', 'https://img.icons8.com/color/48/000000/soy.png'),
+        ('copra', 'Coconut', 'https://img.icons8.com/color/48/000000/coconut.png'),
+        ('groundnut', 'Ground Nut Seeds', 'https://img.icons8.com/color/48/000000/peanuts.png'),
+        ('sesamum', 'Gingelly Seed (Sesamum)', 'https://img.icons8.com/color/48/000000/sesame.png'),
+        ('gram', 'Gram', 'https://img.icons8.com/color/48/000000/paper-bag-with-seeds.png'),
+        ('sugarcane', 'Sugarcane', 'https://img.icons8.com/color/48/000000/bamboo.png'),
+        ('arhar', 'Arhar', 'https://img.icons8.com/color/48/000000/paper-bag-with-seeds.png'),
+        ('ragi', 'Ragi', 'https://img.icons8.com/office/48/000000/wheat.png'),
+        ('maize', 'Maize', 'https://img.icons8.com/color/48/000000/corn.png'),
+        ('moong', 'Moong', 'https://img.icons8.com/color/48/000000/paper-bag-with-seeds.png'),
+        ('masoor', 'Masoor', 'https://img.icons8.com/color/48/000000/paper-bag-with-seeds.png'),
+        ('urad', 'Urad', 'https://img.icons8.com/color/48/000000/paper-bag-with-seeds.png'),
+        ('jute', 'Raw Jute', 'https://img.icons8.com/color/48/000000/potato.png'),
+        ('niger', 'Niger Seed', 'https://img.icons8.com/color/48/000000/paper-bag-with-seeds.png'),
+        ('safflower', 'Kardi Seed', 'https://img.icons8.com/color/48/000000/paper-bag-with-seeds.png'),
+        ('sunflower', 'Sunflower', 'https://img.icons8.com/color/48/000000/potato.png'),
+        ('jowar', 'Jowar', 'https://img.icons8.com/color/48/000000/potato.png'),
+        ('bajra', 'Bajra', 'https://img.icons8.com/color/48/000000/potato.png')
+      ] %}
+      <div class="col s12 m4 l3" data-aos="zoom-in" data-aos-delay="{{loop.index * 50}}">
+        <a href="http://localhost:5000/commodity/{{commodity[0]}}" class="black-text">
+          <div class="card commodity-card">
+            <div class="card-content">
+              <span class="card-title truncate">{{commodity[1]}}</span>
+              <img src="{{commodity[2]}}" alt="{{commodity[1]}}" class="commodity-icon">
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true
+    });
+
+    // Scroll Progress Bar
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("progressBar").style.width = scrolled + "%";
+    };
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    function updateElement(id, endpoint, i) {
+      fetch(`http://localhost:5000/ticker/${endpoint}/${i}`)
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById(id).textContent = data;
+        });
+    }
+
+    function updateImage(id, isGain) {
+      const imgSrc = isGain ? "../static/gain-icon.png" : "../static/loss-icon.png";
+      document.getElementById(id).src = imgSrc;
+    }
+
+    async function updateAll() {
+      let i = 0;
+      setInterval(async function(){
+        i = (i + 1) % 5;
+        updateElement('time', 0, i);
+        await sleep(200);
+        updateElement('crop1', 1, i);
+        await sleep(200);
+        updateElement('price1', 2, i);
+        await sleep(200);
+        updateElement('pos-change', 3, i);
+        updateImage('change1', true);
+        await sleep(200);
+        updateElement('crop2', 4, i);
+        await sleep(200);
+        updateElement('price2', 5, i);
+        await sleep(200);
+        updateElement('neg-change', 6, i);
+        updateImage('change2', false);
+      }, 4000);
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    // Add hover effect for cards
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-10px)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+      });
+    });
+
+    // Initialize all components
+    document.addEventListener('DOMContentLoaded', function() {
+      updateAll();
+      
+      // Initialize tooltips
+      var tooltips = document.querySelectorAll('.tooltipped');
+      M.Tooltip.init(tooltips);
+
+      // Add scroll reveal effect for tables
+      const tableObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      });
+
+      document.querySelectorAll('table').forEach(table => {
+        table.style.opacity = '0';
+        table.style.transform = 'translateY(20px)';
+        table.style.transition = 'all 0.6s ease-out';
+        tableObserver.observe(table);
+      });
+
+      // Add loading animation for commodity icons
+      document.querySelectorAll('.commodity-icon').forEach(icon => {
+        icon.addEventListener('load', function() {
+          this.style.animation = 'fadeIn 0.5s ease-out';
+        });
+      });
+    });
+
+    // Add custom animation for price updates
+    function animateValue(element, start, end, duration) {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const value = Math.floor(progress * (end - start) + start);
+        element.textContent = '₹' + value.toLocaleString();
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    // Add floating animation for specific elements
+    function addFloatingAnimation() {
+      const elements = document.querySelectorAll('.floating');
+      elements.forEach(element => {
+        let random = Math.random() * 1000;
+        element.style.animation = `float 3s ease-in-out ${random}ms infinite`;
+      });
+    }
+    addFloatingAnimation();
+
+    // Add particle background effect
+    function createParticles() {
+      const particlesContainer = document.createElement('div');
+      particlesContainer.className = 'particles';
+      document.body.appendChild(particlesContainer);
+
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // Add custom styles for particles
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = `
+      .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .particle {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        background: rgba(26, 35, 126, 0.1);
+        border-radius: 50%;
+        animation: rise 5s infinite linear;
+      }
+
+      @keyframes rise {
+        0% {
+          transform: translateY(100vh) scale(0);
+        }
+        100% {
+          transform: translateY(-10vh) scale(1);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    `;
+    document.head.appendChild(styleSheet);
+  </script>
+</body>
+</html>

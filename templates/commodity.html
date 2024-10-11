@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnnaDATA - {{context.name}}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #1abc9c; /* Cool teal color */
+      --secondary-color: #2980b9; /* Cool blue color */
+      --background-color: #ecf8f9; /* Light cyan */
+      --text-color: #2c3e50; /* Dark blue-gray */
+      --hover-color: #3498db; /* Lighter blue */
+    }
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      font-family: 'Roboto', sans-serif;
+      scroll-behavior: smooth; /* Smooth scroll for the entire page */
+    }
+    nav {
+      height: 150px; 
+      line-height: 150px;
+      transition: background-color 0.4s ease; /* Transition for background change */
+    }
+    .nav-wrapper {
+      background-color: var(--primary-color);
+    }
+    .nav-wrapper:hover {
+      background-color: var(--secondary-color); /* Change color on hover */
+    }
+    .brand-logo img {
+      height: 100px;
+      width: auto;
+      margin-left: 20px;
+      margin-top: 20px;
+      transition: transform 0.3s ease; /* Smooth scaling */
+    }
+    .brand-logo img:hover {
+      transform: scale(1.1); /* Scale up on hover */
+    }
+    .brand-logo span {
+      font-size: 2rem;
+      margin-left: 20px;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease; /* Smooth scaling effect */
+    }
+    .card:hover {
+      transform: translateY(-10px); /* Hover effect */
+    }
+    .card-title {
+      color: var(--secondary-color);
+    }
+    .btn {
+      background-color: var(--primary-color);
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+    .btn:hover {
+      background-color: var(--hover-color);
+      transform: scale(1.05); /* Slight scale effect */
+    }
+    .table-card {
+      overflow-x: auto;
+    }
+    .chart-container {
+      position: relative;
+      height: 400px;
+      width: 100%;
+    }
+    h2, h5 {
+      text-align: center;
+      margin-bottom: 20px;
+      animation: fadeInDown 1s ease; /* Add fade-in animation */
+    }
+    @keyframes fadeInDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .fade-in-section {
+      opacity: 0;
+      transform: translateY(20px);
+      visibility: hidden;
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .fade-in-section.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo">
+        <img src="/static/images/logo.jpg" alt="AnnDataAIlogo">
+        <span>AnnData.AI - Predicting the Future ✨</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2 class="header fade-in-section">{{context.name}}</h2>
+    <div class="row fade-in-section">
+      <div class="col s12 m8">
+        <div class="card horizontal">
+          <div class="card-image">
+            <img src="{{context.image_url}}" alt="{{context.name}}">
+          </div>
+          <div class="card-stacked">
+            <div class="card-content">
+              <table>
+                <tr>
+                  <td>Current Price</td>
+                  <td><b>₹ {{context.current_price}} / ql</b></td>
+                </tr>
+                <tr>
+                  <td>Prime Location</td>
+                  <td><b>{{context.prime_loc}}</b></td>
+                </tr>
+                <tr>
+                  <td>Crop Type</td>
+                  <td><b>{{context.type_c}}</b></td>
+                </tr>
+                <tr>
+                  <td>Export</td>
+                  <td><b>{{context.export}}</b></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12 m4 fade-in-section">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Brief Forecast</span>
+            <table>
+              <tr>
+                <td>Min. crop price time</td>
+                <td><h5>{{context.min_crop[0]}}</h5></td>
+                <td><h4>₹{{context.min_crop[1]}}</h4></td>
+              </tr>
+              <tr>
+                <td>Max. crop price time</td>
+                <td><h5>{{context.max_crop[0]}}</h5></td>
+                <td><h4>₹{{context.max_crop[1]}}</h4></td>
+              </tr>
+            </table>
+          </div>       
+        </div>
+      </div>
+    </div>
+
+    <div class="row fade-in-section">    
+      <div class="col s12 m4">
+        <h5>Forecast Trends</h5>
+        <div class="card table-card">
+          <div class="card-content">
+            <table class="striped">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Price (per Qtl.)</th>
+                  <th>Change</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for item in context.forecast_values %}
+                <tr>
+                  <td>{{item[0]}}</td>
+                  <td>₹{{item[1]}}</td>
+                  <td class="valign-wrapper">{{item[2]}}% {% if item[2] >= 0 %}<img src="../static/gain-icon.png" height="25" width="25" alt="Gain">{% else %}<img src="../static/loss-icon.png" height="25" width="25" alt="Loss">{% endif %}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col s12 m8">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Next Year Price Forecast</span>
+            <div class="chart-container fade-in-section">
+              <canvas id="forecast-chart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Previous Year Price</span>
+            <div class="chart-container fade-in-section">
+              <canvas id="previous-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const forecastCtx = document.getElementById('forecast-chart').getContext('2d');
+new Chart(forecastCtx, {
+  type: 'line',
+  data: {
+    labels: JSON.parse('{{context.forecast_x|tojson|safe}}'), // X-axis labels
+    datasets: [{
+      label: 'Next Year Price',
+      data: JSON.parse('{{context.forecast_y|tojson|safe}}'), // Data points for Y-axis
+      fill: false,
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 0.1,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false, // Allow the chart to stretch with the container
+    scales: {
+      xAxes: [{
+        display: true,
+        type: 'category',
+        gridLines: {
+          display: true, // Display vertical grid lines
+        },
+        ticks: {
+          autoSkip: false, // Ensure all labels are shown
+          maxRotation: 0,  // Prevent label rotation
+          minRotation: 0,  // Prevent label rotation
+        },
+      }],
+      yAxes: [{
+        ticks: {
+          beginAtZero: false, // Adjust Y-axis if you prefer to start from a specific value
+          suggestedMin: 1000, // Starting point of Y-axis
+          stepSize: 200, // Increment size for the Y-axis values
+        },
+      }]
+    },
+    layout: {
+      padding: {
+        left: 10,
+        right: 10,
+        top: 10,
+        bottom: 10,
+      }
+    }
+  }
+});
+
+
+      const previousCtx = document.getElementById('previous-chart').getContext('2d');
+      new Chart(previousCtx, {
+        type: 'line',
+        data: {
+          labels: JSON.parse('{{context.previous_x|tojson|safe}}'),
+          datasets: [{
+            label: 'Previous Year Price',
+            data: JSON.parse('{{context.previous_y|tojson|safe}}'),
+            fill: false,
+            borderColor: 'rgb(255, 99, 132)',
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: false,
+                suggestedMin: 1000,
+                stepSize: 200
+              }
+            }]
+          }
+        }
+      });
+
+      /* Fade in animations for sections */
+      const fadeIns = document.querySelectorAll('.fade-in-section');
+      const options = {
+        threshold: 0.5,
+        rootMargin: "0px 0px -200px 0px"
+      };
+
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, options);
+
+      fadeIns.forEach(section => {
+        observer.observe(section);
+      });
+    });
+  </script>
+</body>
+</html>

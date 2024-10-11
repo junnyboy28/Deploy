@@ -5,6 +5,7 @@ Created on Fri Oct  11 04:34:27 2024
 @author: Jimil Mandani
 """
 
+import os
 from flask import Flask, render_template
 from flask_cors import CORS, cross_origin
 import numpy as np
@@ -12,13 +13,12 @@ import pandas as pd
 from datetime import datetime
 import crops
 import random
-
-# import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-cors = CORS(app, resources={r"/ticker": {"origins": "http://localhost:port"}})
+cors = CORS(app, resources={r"/ticker": {"origins": "*"}})
 
 commodity_dict = {
     "arhar": "static/Arhar.csv",
@@ -69,35 +69,23 @@ base = {
     "Sunflower": 3700,
     "Urad": 4300,
     "Wheat": 1350
-
 }
 commodity_list = []
 
-
 class Commodity:
-
     def __init__(self, csv_name):
         self.name = csv_name
         dataset = pd.read_csv(csv_name)
         self.X = dataset.iloc[:, :-1].values
         self.Y = dataset.iloc[:, 3].values
 
-        #from sklearn.model_selection import train_test_split
-        #X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1, random_state=0)
-
-        # Fitting decision tree regression to dataset
-        from sklearn.tree import DecisionTreeRegressor
         depth = random.randrange(7,18)
         self.regressor = DecisionTreeRegressor(max_depth=depth)
         self.regressor.fit(self.X, self.Y)
-        #y_pred_tree = self.regressor.predict(X_test)
-        # fsa=np.array([float(1),2019,45]).reshape(1,3)
-        # fask=regressor_tree.predict(fsa)
 
     def getPredictedValue(self, value):
         if value[1]>=2019:
             fsa = np.array(value).reshape(1, 3)
-            #print(" ",self.regressor.predict(fsa)[0])
             return self.regressor.predict(fsa)[0]
         else:
             c=self.X[:,0:2]
@@ -110,15 +98,11 @@ class Commodity:
                 if x[i]==fsa:
                     ind=i
                     break
-            #print(index, " ",ind)
-            #print(x[ind])
-            #print(self.Y[i])
             return self.Y[i]
 
     def getCropName(self):
         a = self.name.split('.')
         return a[0]
-
 
 @app.route('/')
 def index():
@@ -129,7 +113,6 @@ def index():
     }
     return render_template('index.html', context=context)
 
-
 @app.route('/commodity/<name>')
 def crop_profile(name):
     max_crop, min_crop, forecast_crop_values = TwelveMonthsForecast(name)
@@ -139,11 +122,6 @@ def crop_profile(name):
     previous_x = [i[0] for i in prev_crop_values]
     previous_y = [i[1] for i in prev_crop_values]
     current_price = CurrentMonth(name)
-    #print(max_crop)
-    #print(min_crop)
-    #print(forecast_crop_values)
-    #print(prev_crop_values)
-    #print(str(forecast_x))
     crop_data = crops.crop(name)
     context = {
         "name":name,
@@ -164,7 +142,7 @@ def crop_profile(name):
     return render_template('commodity.html', context=context)
 
 @app.route('/ticker/<item>/<number>')
-@cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def ticker(item, number):
     n = int(number)
     i = int(item)
@@ -174,12 +152,9 @@ def ticker(item, number):
     if i == 2 or i == 5:
         context = '₹' + context
     elif i == 3 or i == 6:
-
         context = context + '%'
 
-    #print('context: ', context)
     return context
-
 
 def TopFiveWinners():
     current_month = datetime.now().month
@@ -199,15 +174,12 @@ def TopFiveWinners():
         change.append((((current_predict - prev_predict) * 100 / prev_predict), commodity_list.index(i)))
     sorted_change = change
     sorted_change.sort(reverse=True)
-    # print(sorted_change)
     to_send = []
     for j in range(0, 5):
         perc, i = sorted_change[j]
         name = commodity_list[i].getCropName().split('/')[1]
         to_send.append([name, round((current_month_prediction[i] * base[name]) / 100, 2), round(perc, 2)])
-    #print(to_send)
     return to_send
-
 
 def TopFiveLosers():
     current_month = datetime.now().month
@@ -232,10 +204,7 @@ def TopFiveLosers():
         perc, i = sorted_change[j]
         name = commodity_list[i].getCropName().split('/')[1]
         to_send.append([name, round((current_month_prediction[i] * base[name]) / 100, 2), round(perc, 2)])
-   # print(to_send)
     return to_send
-
-
 
 def SixMonthsForecast():
     month1=[]
@@ -277,8 +246,6 @@ def SixMonthsForecast():
     crop_month_wise.append([month4[0][3],month4[len(month4)-1][2],month4[len(month4)-1][0],month4[len(month4)-1][1],month4[0][2],month4[0][0],month4[0][1]])
     crop_month_wise.append([month5[0][3],month5[len(month5)-1][2],month5[len(month5)-1][0],month5[len(month5)-1][1],month5[0][2],month5[0][0],month5[0][1]])
     crop_month_wise.append([month6[0][3],month6[len(month6)-1][2],month6[len(month6)-1][0],month6[len(month6)-1][1],month6[0][2],month6[0][0],month6[0][1]])
-
-   # print(crop_month_wise)
     return crop_month_wise
 
 def SixMonthsForecastHelper(name):
@@ -314,7 +281,6 @@ def SixMonthsForecastHelper(name):
         x = x.strftime("%b %y")
         crop_price.append([x, round((wpis[i]* base[name.capitalize()]) / 100, 2) , round(change[i], 2)])
 
-   # print("Crop_Price: ", crop_price)
     return crop_price
 
 def CurrentMonth(name):
@@ -376,7 +342,6 @@ def TwelveMonthsForecast(name):
         x = datetime(y, m, 1)
         x = x.strftime("%b %y")
         crop_price.append([x, round((wpis[i]* base[name.capitalize()]) / 100, 2) , round(change[i], 2)])
-   # print("forecasr", wpis)
     x = datetime(max_year,max_month,1)
     x = x.strftime("%b %y")
     max_crop = [x, round(max_value,2)]
@@ -385,7 +350,6 @@ def TwelveMonthsForecast(name):
     min_crop = [x, round(min_value,2)]
 
     return max_crop, min_crop, crop_price
-
 
 def TwelveMonthPrevious(name):
     name = name.lower()
@@ -415,12 +379,10 @@ def TwelveMonthPrevious(name):
         x = datetime(y,m,1)
         x = x.strftime("%b %y")
         crop_price.append([x, round((wpis[i]* base[name.capitalize()]) / 100, 2)])
-   # print("previous ", wpis)
     new_crop_price =[]
     for i in range(len(crop_price)-1,-1,-1):
         new_crop_price.append(crop_price[i])
     return new_crop_price
-
 
 if __name__ == "__main__":
     arhar = Commodity(commodity_dict["arhar"])
@@ -468,9 +430,5 @@ if __name__ == "__main__":
     wheat = Commodity(commodity_dict["wheat"])
     commodity_list.append(wheat)
 
-    app.run()
-
-
-
-
-
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
